@@ -30,7 +30,7 @@ jobs:
     - name: Create README with usage instructions
       run: |
         echo Build includes: seekstorm_server.exe and pdfium.dll > target/release/README.txt
-        echo. >> target/release/README.txt
+        echo "" >> target/release/README.txt
         echo USAGE: >> target/release/README.txt
         echo 1. Place both files in the same folder. >> target/release/README.txt
         echo 2. Run: seekstorm_server.exe local_ip="0.0.0.0" local_port=80 >> target/release/README.txt
