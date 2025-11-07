@@ -1,27 +1,49 @@
-name: Build SeekStorm for Windows
+name: Build SeekStorm for Windows (PDFium + README + AutoZIP)
 
 on:
-  workflow_dispatch:  # Allows you to trigger manually
+  workflow_dispatch:  # Manual trigger
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+    - name: Checkout source
+      uses: actions/checkout@v4
 
-    - name: Install Rust
+    - name: Install Rust toolchain
       uses: actions-rs/toolchain@v1
       with:
         toolchain: stable
         override: true
 
-    - name: Build (Release mode)
+    - name: Build SeekStorm (Release mode)
       run: cargo build --release
 
-    - name: Upload exe artifact
-      uses: actions/upload-artifact@v3
+    - name: Download PDFium DLL (Windows x64)
+      run: |
+        curl -L https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-windows-x64.zip -o pdfium.zip
+        tar -xf pdfium.zip
+        mkdir target/release/pdfium
+        copy pdfium.dll target/release/pdfium/pdfium.dll
+
+    - name: Create README with usage instructions
+      run: |
+        echo Build includes: seekstorm_server.exe and pdfium.dll > target/release/README.txt
+        echo. >> target/release/README.txt
+        echo USAGE: >> target/release/README.txt
+        echo 1. Place both files in the same folder. >> target/release/README.txt
+        echo 2. Run: seekstorm_server.exe local_ip="0.0.0.0" local_port=80 >> target/release/README.txt
+        echo 3. To ingest PDFs: type 'ingest C:\Path\To\PDFs' in the server console. >> target/release/README.txt
+        echo 4. Access the web interface at: http://127.0.0.1 >> target/release/README.txt
+        echo 5. Type 'quit' in console to stop server. >> target/release/README.txt
+
+    - name: Zip build output
+      run: |
+        powershell Compress-Archive -Path target/release/seekstorm_server.exe,target/release/pdfium/pdfium.dll,target/release/README.txt -DestinationPath target/release/seekstorm_windows_build.zip
+
+    - name: Upload zip artifact
+      uses: actions/upload-artifact@v4
       with:
-        name: seekstorm_server.exe
-        path: target/release/seekstorm_server.exe
+        name: seekstorm_windows_build
+        path: target/release/seekstorm_windows_build.zip
