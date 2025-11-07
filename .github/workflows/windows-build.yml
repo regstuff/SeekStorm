@@ -1,7 +1,7 @@
 name: Build SeekStorm for Windows (PDFium + README + AutoZIP)
 
 on:
-  workflow_dispatch:  # Manual trigger
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,12 +20,12 @@ jobs:
     - name: Build SeekStorm (Release mode)
       run: cargo build --release
 
-    - name: Download PDFium DLL (Windows x64)
+    - name: Download and extract PDFium DLL (Windows x64)
       run: |
-        curl -L https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-windows-x64.zip -o pdfium.zip
-        tar -xf pdfium.zip
+        curl -L https://github.com/bblanchon/pdfium-binaries/releases/latest/download/pdfium-win-x64.tgz -o pdfium.tgz
+        tar -xvzf pdfium.tgz
         mkdir target/release/pdfium
-        copy pdfium.dll target/release/pdfium/pdfium.dll
+        copy bin\pdfium.dll target/release/pdfium/pdfium.dll
 
     - name: Create README with usage instructions
       run: |
